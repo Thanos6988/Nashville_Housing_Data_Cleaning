@@ -1,6 +1,6 @@
---Cleaning data in SQL queries
+--Cleaning data in SQL
 
---Standardize date format
+--Change date format
 
 select convert(date,SaleDate)
 from dbo.NashvilleHousing
@@ -23,7 +23,7 @@ DROP COLUMN SaleDate;
 select *
 from dbo.NashvilleHousing
 
---Populate Property Address data (Self Join)
+--Populate Property Address data with Self Join
 
 select a.ParcelID,a.PropertyAddress,b.ParcelID,b.PropertyAddress,isnull(a.PropertyAddress,b.PropertyAddress)
 from dbo.NashvilleHousing a
@@ -41,7 +41,7 @@ and a.[UniqueID ]<>b.[UniqueID ]
 where a.PropertyAddress is null
 
 
---Breaking out Address (Property & Owner) into individual columns(Address,City,State)
+--Breaking out Address (Property & Owner) into individual columns (Address,City,State)
 
 select PropertyAddress
 from dbo.NashvilleHousing 
@@ -109,10 +109,15 @@ from dbo.NashvilleHousing
 group by SoldAsVacant
 order by 2
 
-select replace('SoldAsVacant', 'Y', 'Yes');
-select replace('SoldAsVacant', 'N', 'No');
+select REPLACE(SoldAsVacant, 'Y', 'Yes')
+from dbo.NashvilleHousing
+WHERE SoldAsVacant like 'Y'
 
---alternatively
+select REPLACE(SoldAsVacant, 'N', 'No')
+from dbo.NashvilleHousing
+WHERE SoldAsVacant like 'N' 
+
+--Alternatively
 
 select SoldAsVacant,
 case when SoldAsVacant = 'Y' then 'Yes'
@@ -138,28 +143,25 @@ order by 2
 
 --Remove Duplicates
 
+
 with RowNumCTE as(
 select *,
-ROW_NUMBER() over (
+row_num = ROW_NUMBER() over (
 partition by ParcelID,
              PropertyAddress,
 			 SalePrice,
-			 SaleDateConverted,
+			 SaleDate,
 			 LegalReference
 			 order by
 			 UniqueID
-			 ) row_num
+			 ) 
 from dbo.NashvilleHousing
---order by ParcelID
 )
-
---select *	
---from RowNumCTE
---where row_num > 1
 
 delete
 from RowNumCTE
 where row_num > 1
+
 
 
 
